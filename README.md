@@ -1,2 +1,3 @@
 # Infinite-Jumper
-Game made with Phaser 3 engine
+
+Game made with Phaser 3 engine.
