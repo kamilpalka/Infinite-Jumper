@@ -3,6 +3,8 @@ import Phaser from "../lib/phaser.js";
 import Carrot from "../game/Carrot.js";
 
 export default class Game extends Phaser.Scene {
+  carrotsCollected = 0;
+
   /**@type {Phaser.Physics.Arcade.Sprite} */
   player;
 
@@ -14,6 +16,9 @@ export default class Game extends Phaser.Scene {
 
   /** @type {Phaser.Physics.Arcade.Group} */
   carrots;
+
+  /** @type {Phaser.GameObjects.Text} */
+  carrotsCollectedText;
 
   constructor() {
     super("game");
@@ -62,9 +67,23 @@ export default class Game extends Phaser.Scene {
       classType: Carrot,
     });
 
-    this.carrots.get(240, 320, "carrot");
+    //this.carrots.get(240, 320, "carrot");
 
     this.physics.add.collider(this.platforms, this.carrots);
+
+    this.physics.add.overlap(
+      this.player,
+      this.carrots,
+      this.handleCollectCarrot,
+      undefined,
+      this
+    );
+
+    const style = { color: "#000", fontSize: 24 };
+    this.carrotsCollectedText = this.add
+      .text(240, 10, "Carrots: 0", style)
+      .setScrollFactor(0)
+      .setOrigin(0.5, 0);
   }
 
   update() {
@@ -118,10 +137,28 @@ export default class Game extends Phaser.Scene {
     /** @type {Phaser.Physics.Arcade.Sprite} */
     const carrot = this.carrots.get(sprite.x, y, "carrot");
 
+    carrot.setActive(true);
+    carrot.setVisible(true);
+
     this.add.existing(carrot);
 
     carrot.body.setSize(carrot.width, carrot.height);
 
+    this.physics.world.enable(carrot);
+
     return carrot;
+  }
+
+  /**
+   * @param {Phaser.Physics.Arcade.Sprite} player
+   * @param {Carrot} carrot
+   */
+  handleCollectCarrot(player, carrot) {
+    this.carrots.killAndHide(carrot);
+    this.physics.world.disableBody(carrot.body);
+    this.carrotsCollected++;
+
+    const value = `Carrots: ${this.carrotsCollected}`;
+    this.carrotsCollectedText.text = value;
   }
 }
